@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe } from 'lucide-react';
+import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe, X } from 'lucide-react';
 
 const translations = {
   en: {
@@ -118,8 +118,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const [showPricing, setShowPricing] = useState(false);
 
-const handleTrack = async () => {
+  const handleTrack = async () => {
     if (!url || !keywords.trim()) return;
     const kwArray = keywords.split(',').map(k => k.trim()).filter(k => k);
     if (kwArray.length === 0) return;
@@ -142,6 +143,21 @@ const handleTrack = async () => {
     }
   };
 
+  const handleUpgrade = async () => {
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId: 'price_1GeorankPro' }), // замени на реальный Price ID из Stripe
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert(data.error);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   if (!ready) return null;
 
   return (
@@ -156,7 +172,7 @@ const handleTrack = async () => {
           <div className="flex items-center gap-3">
             <LanguageSwitcher locale={locale} setLocale={setLocale} />
             <button
-              onClick={() => alert(t.upgrade.description)}
+              onClick={() => setShowPricing(true)}
               className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors duration-200"
             >
               {t.upgrade.button}
@@ -264,6 +280,31 @@ const handleTrack = async () => {
             {t.blogLink} <ArrowRight className="w-3 h-3" />
           </a>
         </div>
+
+        {/* Upgrade Modal */}
+        {showPricing && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowPricing(false)}>
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto">
+                  <BarChart3 className="w-8 h-8 text-blue-400" />
+                </div>
+                <h2 className="text-2xl font-bold">{t.upgrade.title}</h2>
+                <p className="text-sm text-slate-400">{t.upgrade.description}</p>
+                <div className="text-4xl font-bold">{t.upgrade.price}</div>
+                <button
+                  onClick={handleUpgrade}
+                  className="w-full py-3 bg-blue-500 hover:bg-blue-400 text-black font-bold rounded-xl transition-colors duration-300 flex items-center justify-center gap-2"
+                >
+                  {t.upgrade.subscribe} <ArrowRight className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowPricing(false)} className="text-sm text-slate-400 hover:text-white">
+                  {t.upgrade.maybeLater}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

@@ -14,11 +14,10 @@ export async function POST(request) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
-  // Здесь можно сохранять статус подписки в Supabase
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    console.log('Payment successful:', session);
-    // В будущем: обновить профиль пользователя в БД
+    console.log('Payment successful:', session.id);
+    // В будущем здесь будем обновлять статус подписки в БД
   }
 
   return NextResponse.json({ received: true });
