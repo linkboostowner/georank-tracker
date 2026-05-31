@@ -98,19 +98,20 @@ function LanguageSwitcher({ locale, setLocale }) {
 }
 
 export default function Home() {
-  const [locale, setLocale] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('georank-locale');
-      if (saved === 'en' || saved === 'ru') return saved;
-    }
-    return 'en';
-  });
+  const [locale, setLocale] = useState('en'); // всегда начинаем с 'en', одинаково на сервере и клиенте
 
-  const t = translations[locale];
+  useEffect(() => {
+    const saved = localStorage.getItem('georank-locale');
+    if (saved === 'en' || saved === 'ru') {
+      setLocale(saved);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('georank-locale', locale);
   }, [locale]);
+
+  const t = translations[locale];
 
   const [url, setUrl] = useState('');
   const [keywords, setKeywords] = useState('');
