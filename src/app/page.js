@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe } from 'lucide-react';
+import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe, Sparkles } from 'lucide-react';
 
 const translations = {
   en: {
@@ -99,17 +99,31 @@ function LanguageSwitcher({ locale, setLocale }) {
 
 export default function Home() {
   const [locale, setLocale] = useState('en');
+  const [isPro, setIsPro] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('georank-locale');
     if (saved === 'en' || saved === 'ru') setLocale(saved);
+    // Проверяем сохранённый PRO-статус
+    const proStatus = localStorage.getItem('georank-pro');
+    if (proStatus === 'true') setIsPro(true);
     setReady(true);
   }, []);
 
   useEffect(() => {
     localStorage.setItem('georank-locale', locale);
   }, [locale]);
+
+  // При возврате из Stripe активируем PRO
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('session_id=')) {
+      localStorage.setItem('georank-pro', 'true');
+      setIsPro(true);
+      // Убираем параметр из URL, чтобы не активировать повторно при обновлении
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const t = translations[locale];
 
@@ -171,12 +185,18 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher locale={locale} setLocale={setLocale} />
-            <button
-              onClick={() => setShowPricing(true)}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors duration-200"
-            >
-              {t.upgrade.button}
-            </button>
+            {isPro ? (
+              <span className="px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded-full text-xs font-bold flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> PRO
+              </span>
+            ) : (
+              <button
+                onClick={() => setShowPricing(true)}
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors duration-200"
+              >
+                {t.upgrade.button}
+              </button>
+            )}
           </div>
         </div>
 
