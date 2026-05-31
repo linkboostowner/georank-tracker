@@ -148,8 +148,7 @@ export default function Home() {
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: 'price_1GeorankPro' }), // замени на реальный Price ID из Stripe
-      });
+        body: JSON.stringify({ priceId: 'price_1Td3sRBnnj8yRRWUwICrBrbZ' }),
       const data = await res.json();
       if (data.url) window.location.href = data.url;
       else alert(data.error);
