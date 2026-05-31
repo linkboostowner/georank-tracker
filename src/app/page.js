@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe } from 'lucide-react';
+import { Search, Loader2, TrendingUp, ArrowRight, Globe } from 'lucide-react';
 
 const translations = {
   en: {
@@ -10,8 +10,7 @@ const translations = {
       subtitle: 'GeoRank Tracker',
       description: 'Monitor how your site appears in AI search results for your target keywords.',
       freeScans: '3 free checks/day',
-      aiPowered: 'AI-powered',
-      history: 'Check history'
+      aiPowered: 'AI-powered'
     },
     inputs: {
       url: 'Enter site URL (e.g., yoursite.com)',
@@ -19,26 +18,9 @@ const translations = {
       button: 'Check Rankings',
       checking: 'Checking...'
     },
-    results: {
-      title: 'Results for',
-      visible: 'Visible',
-      notVisible: 'Not visible',
-      position: 'Position in results: #'
-    },
-    error: {
-      default: 'An error occurred. Please try again.'
-    },
-    upgrade: {
-      button: 'Upgrade to PRO',
-      title: 'Unlock Unlimited Tracking',
-      description: 'Get unlimited keyword checks, daily monitoring, and history.',
-      price: '$19/month',
-      subscribe: 'Subscribe with Stripe',
-      maybeLater: 'Maybe later'
-    },
+    results: { title: 'Results for', visible: 'Visible', notVisible: 'Not visible' },
     geoScanLink: 'Need a full AI visibility audit?',
-    tryGeoScan: 'Try GeoScan',
-    blogLink: 'Read our Blog'
+    tryGeoScan: 'Try GeoScan'
   },
   ru: {
     hero: {
@@ -46,8 +28,7 @@ const translations = {
       subtitle: 'GeoRank Tracker',
       description: 'Мониторинг появления вашего сайта в результатах AI-поиска по ключевым словам.',
       freeScans: '3 бесплатных проверки/день',
-      aiPowered: 'На основе AI',
-      history: 'История проверок'
+      aiPowered: 'На основе AI'
     },
     inputs: {
       url: 'Введите URL сайта (например, yoursite.com)',
@@ -55,56 +36,20 @@ const translations = {
       button: 'Проверить позиции',
       checking: 'Проверяем...'
     },
-    results: {
-      title: 'Результаты для',
-      visible: 'Видим',
-      notVisible: 'Не видим',
-      position: 'Позиция в выдаче: #'
-    },
-    error: {
-      default: 'Произошла ошибка. Попробуйте снова.'
-    },
-    upgrade: {
-      button: 'Обновитесь до PRO',
-      title: 'Безлимитный трекинг',
-      description: 'Неограниченные проверки, ежедневный мониторинг и история.',
-      price: '$19/мес',
-      subscribe: 'Подписаться через Stripe',
-      maybeLater: 'Может, позже'
-    },
+    results: { title: 'Результаты для', visible: 'Видим', notVisible: 'Не видим' },
     geoScanLink: 'Нужен полный аудит AI-видимости?',
-    tryGeoScan: 'Попробуйте GeoScan',
-    blogLink: 'Читать блог'
+    tryGeoScan: 'Попробуйте GeoScan'
   }
 };
 
-function LanguageSwitcher({ locale, setLocale }) {
-  return (
-    <div className="flex items-center gap-1">
-      <button
-        onClick={() => setLocale('en')}
-        className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${locale === 'en' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-      >
-        EN
-      </button>
-      <button
-        onClick={() => setLocale('ru')}
-        className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${locale === 'ru' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-      >
-        RU
-      </button>
-    </div>
-  );
-}
-
 export default function Home() {
-  const [locale, setLocale] = useState('en'); // всегда начинаем с 'en', одинаково на сервере и клиенте
+  const [locale, setLocale] = useState('en');
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('georank-locale');
-    if (saved === 'en' || saved === 'ru') {
-      setLocale(saved);
-    }
+    if (saved === 'en' || saved === 'ru') setLocale(saved);
+    setReady(true);
   }, []);
 
   useEffect(() => {
@@ -127,143 +72,198 @@ export default function Home() {
     setError('');
     setResults(null);
     try {
-      const res = await fetch('/api/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, keywords: kwArray }),
-      });
-      if (!res.ok) throw new Error('Tracking failed');
-      const data = await res.json();
-      setResults(data.results);
+      // Пока используем тестовые данные
+      const mockResults = kwArray.map(kw => ({
+        keyword: kw,
+        appearing: Math.random() > 0.5,
+        snippet: Math.random() > 0.5 ? `Sample snippet about ${kw}` : null,
+        position: Math.random() > 0.5 ? Math.ceil(Math.random() * 10) : null,
+      }));
+      setResults(mockResults);
     } catch (err) {
-      setError(err.message || t.error.default);
+      setError(err.message || 'Error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpgradeClick = () => {
-    alert(t.upgrade.description);
-  };
+  if (!ready) return null;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-start px-4 py-16">
-      <div className="max-w-3xl w-full space-y-8">
-        {/* Header with language switcher and Upgrade button */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-blue-400" />
-            <span className="text-sm font-medium">GeoRank</span>
+    <main style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: 'white', padding: '2rem', fontFamily: 'sans-serif' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Globe size={20} color="#60a5fa" />
+            <span style={{ fontWeight: 500 }}>GeoRank</span>
           </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher locale={locale} setLocale={setLocale} />
+          <div style={{ display: 'flex', gap: '4px' }}>
             <button
-              onClick={handleUpgradeClick}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-all duration-200"
+              onClick={() => setLocale('en')}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: locale === 'en' ? '#2563eb' : '#1e293b',
+                color: locale === 'en' ? 'white' : '#94a3b8',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
             >
-              {t.upgrade.button}
+              EN
+            </button>
+            <button
+              onClick={() => setLocale('ru')}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: locale === 'ru' ? '#2563eb' : '#1e293b',
+                color: locale === 'ru' ? 'white' : '#94a3b8',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
+            >
+              RU
             </button>
           </div>
         </div>
 
         {/* Hero */}
-        <div className="relative rounded-3xl bg-gradient-to-br from-blue-500/10 via-slate-800/50 to-purple-500/10 p-10 text-center border border-slate-700 shadow-2xl">
-          <div className="absolute inset-0 bg-grid-slate-800/[0.05] rounded-3xl" />
-          <div className="relative space-y-4">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-              {t.hero.title}{' '}
-              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                {t.hero.subtitle}
-              </span>
-            </h1>
-            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-              {t.hero.description}
-            </p>
-            <div className="flex items-center justify-center gap-6 text-sm text-slate-400">
-              <span className="flex items-center gap-1"><Check className="w-4 h-4 text-blue-400" /> {t.hero.freeScans}</span>
-              <span className="flex items-center gap-1"><Zap className="w-4 h-4 text-amber-400" /> {t.hero.aiPowered}</span>
-              <span className="flex items-center gap-1"><BarChart3 className="w-4 h-4 text-purple-400" /> {t.hero.history}</span>
-            </div>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            {t.hero.title}{' '}
+            <span style={{ color: '#60a5fa' }}>{t.hero.subtitle}</span>
+          </h1>
+          <p style={{ color: '#cbd5e1', maxWidth: '600px', margin: '0 auto' }}>{t.hero.description}</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem', color: '#94a3b8', fontSize: '0.875rem' }}>
+            <span>✅ {t.hero.freeScans}</span>
+            <span>⚡ {t.hero.aiPowered}</span>
           </div>
         </div>
 
-        {/* Input fields */}
-        <div className="space-y-4">
+        {/* Inputs */}
+        <div style={{ marginBottom: '1rem' }}>
           <input
             type="url"
             placeholder={t.inputs.url}
-            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 outline-none focus:border-blue-400 transition-all duration-200"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '12px',
+              backgroundColor: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: '8px',
+              color: 'white',
+              marginBottom: '0.5rem',
+              outline: 'none',
+            }}
           />
           <input
             type="text"
             placeholder={t.inputs.keywords}
-            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 outline-none focus:border-blue-400 transition-all duration-200"
             value={keywords}
             onChange={(e) => setKeywords(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleTrack()}
+            style={{
+              width: '100%',
+              padding: '12px',
+              backgroundColor: '#1e293b',
+              border: '1px solid #334155',
+              borderRadius: '8px',
+              color: 'white',
+              outline: 'none',
+            }}
           />
         </div>
 
         <button
           onClick={handleTrack}
           disabled={loading || !url || !keywords.trim()}
-          className="w-full py-3 bg-blue-500 hover:bg-blue-400 text-black font-bold rounded-xl transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:scale-105"
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#2563eb',
+            color: 'white',
+            fontWeight: 'bold',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            opacity: loading ? 0.7 : 1,
+          }}
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-          {loading ? t.inputs.checking : t.inputs.button}
+          {loading ? (
+            <>
+              <Loader2 size={18} className="animate-spin" /> {t.inputs.checking}
+            </>
+          ) : (
+            <>
+              <Search size={18} /> {t.inputs.button}
+            </>
+          )}
         </button>
 
         {error && (
-          <div className="text-center text-red-400 bg-red-900/20 p-4 rounded-xl flex items-center justify-center gap-2">
-            <Shield className="w-5 h-5" /> {error}
+          <div style={{ color: '#f87171', marginTop: '1rem', textAlign: 'center' }}>
+            {error}
           </div>
         )}
 
         {results && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-400" /> {t.results.title} {url}
+          <div style={{ marginTop: '1.5rem' }}>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+              <TrendingUp size={20} color="#60a5fa" /> {t.results.title} {url}
             </h2>
             {results.map((item, i) => (
-              <div key={i} className="p-4 bg-slate-800 border border-slate-700 rounded-xl transition-all duration-200 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{item.keyword}</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.appearing ? 'bg-blue-500/20 text-blue-400' : 'bg-red-500/20 text-red-400'}`}>
+              <div
+                key={i}
+                style={{
+                  padding: '16px',
+                  backgroundColor: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: '8px',
+                  marginBottom: '8px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 500 }}>{item.keyword}</span>
+                  <span
+                    style={{
+                      padding: '2px 12px',
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      backgroundColor: item.appearing ? 'rgba(96,165,250,0.2)' : 'rgba(248,113,113,0.2)',
+                      color: item.appearing ? '#60a5fa' : '#f87171',
+                    }}
+                  >
                     {item.appearing ? t.results.visible : t.results.notVisible}
                   </span>
                 </div>
                 {item.snippet && (
-                  <p className="text-sm text-slate-400 italic">«{item.snippet}»</p>
-                )}
-                {item.position && (
-                  <p className="text-xs text-slate-500 mt-1">{t.results.position}{item.position}</p>
+                  <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '8px' }}>«{item.snippet}»</p>
                 )}
               </div>
             ))}
           </div>
         )}
 
-        {/* Ссылки на экосистему */}
-        <div className="text-center pt-8 border-t border-slate-800 space-y-2">
-          <p className="text-sm text-slate-500">{t.geoScanLink}</p>
+        {/* GeoScan link */}
+        <div style={{ textAlign: 'center', marginTop: '3rem', color: '#94a3b8', fontSize: '0.875rem' }}>
+          <p>{t.geoScanLink}</p>
           <a
             href="https://geoscan-a.vercel.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:underline inline-flex items-center gap-1 transition-all duration-200"
+            style={{ color: '#60a5fa', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
           >
-            {t.tryGeoScan} <ArrowRight className="w-4 h-4" />
-          </a>
-          <br />
-          <a
-            href="https://geoscan-a.vercel.app/blog"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 hover:underline text-sm inline-flex items-center gap-1 transition-all duration-200"
-          >
-            {t.blogLink} <ArrowRight className="w-3 h-3" />
+            {t.tryGeoScan} <ArrowRight size={16} />
           </a>
         </div>
       </div>
