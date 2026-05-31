@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe, X } from 'lucide-react';
+import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe } from 'lucide-react';
 
 const translations = {
   en: {
@@ -149,6 +149,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId: 'price_1Td3sRBnnj8yRRWUwICrBrbZ' }),
+      });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
       else alert(data.error);
