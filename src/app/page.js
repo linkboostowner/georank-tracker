@@ -119,7 +119,7 @@ export default function Home() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
 
-  const handleTrack = async () => {
+const handleTrack = async () => {
     if (!url || !keywords.trim()) return;
     const kwArray = keywords.split(',').map(k => k.trim()).filter(k => k);
     if (kwArray.length === 0) return;
@@ -127,14 +127,14 @@ export default function Home() {
     setError('');
     setResults(null);
     try {
-      // Пока используем тестовые данные
-      const mockResults = kwArray.map(kw => ({
-        keyword: kw,
-        appearing: Math.random() > 0.5,
-        snippet: Math.random() > 0.5 ? `Sample snippet about ${kw}` : null,
-        position: Math.random() > 0.5 ? Math.ceil(Math.random() * 10) : null,
-      }));
-      setResults(mockResults);
+      const res = await fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, keywords: kwArray }),
+      });
+      if (!res.ok) throw new Error('Tracking failed');
+      const data = await res.json();
+      setResults(data.results);
     } catch (err) {
       setError(err.message || t.error.default);
     } finally {
