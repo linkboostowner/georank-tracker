@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Sparkles, Shield, BarChart3, Globe } from 'lucide-react';
+import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe } from 'lucide-react';
 
 const translations = {
   en: {
@@ -78,14 +78,35 @@ const translations = {
   }
 };
 
-export default function Home() {
-  const [locale, setLocale] = useState('en');
-  const t = translations[locale];
+function LanguageSwitcher({ locale, setLocale }) {
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => setLocale('en')}
+        className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${locale === 'en' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+      >
+        EN
+      </button>
+      <button
+        onClick={() => setLocale('ru')}
+        className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${locale === 'ru' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+      >
+        RU
+      </button>
+    </div>
+  );
+}
 
-  useEffect(() => {
-    const saved = localStorage.getItem('georank-locale');
-    if (saved === 'en' || saved === 'ru') setLocale(saved);
-  }, []);
+export default function Home() {
+  const [locale, setLocale] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('georank-locale');
+      if (saved === 'en' || saved === 'ru') return saved;
+    }
+    return 'en';
+  });
+
+  const t = translations[locale];
 
   useEffect(() => {
     localStorage.setItem('georank-locale', locale);
@@ -96,7 +117,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
-  const [showPricing, setShowPricing] = useState(false);
 
   const handleTrack = async () => {
     if (!url || !keywords.trim()) return;
@@ -121,19 +141,8 @@ export default function Home() {
     }
   };
 
-  const handleUpgrade = async () => {
-    try {
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: 'price_1GeorankPro' }), // замени на реальный Price ID из Stripe
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert(data.error);
-    } catch (err) {
-      alert(err.message);
-    }
+  const handleUpgradeClick = () => {
+    alert(t.upgrade.description);
   };
 
   return (
@@ -146,22 +155,9 @@ export default function Home() {
             <span className="text-sm font-medium">GeoRank</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setLocale('en')}
-                className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${locale === 'en' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLocale('ru')}
-                className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${locale === 'ru' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
-              >
-                RU
-              </button>
-            </div>
+            <LanguageSwitcher locale={locale} setLocale={setLocale} />
             <button
-              onClick={() => setShowPricing(true)}
+              onClick={handleUpgradeClick}
               className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-all duration-200"
             >
               {t.upgrade.button}
@@ -253,6 +249,8 @@ export default function Home() {
           <p className="text-sm text-slate-500">{t.geoScanLink}</p>
           <a
             href="https://geoscan-a.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-blue-400 hover:underline inline-flex items-center gap-1 transition-all duration-200"
           >
             {t.tryGeoScan} <ArrowRight className="w-4 h-4" />
@@ -267,31 +265,6 @@ export default function Home() {
             {t.blogLink} <ArrowRight className="w-3 h-3" />
           </a>
         </div>
-
-        {/* Upgrade Modal */}
-        {showPricing && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowPricing(false)}>
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 w-full max-w-md shadow-2xl animate-in fade-in zoom-in" onClick={e => e.stopPropagation()}>
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto">
-                  <Sparkles className="w-8 h-8 text-blue-400" />
-                </div>
-                <h2 className="text-2xl font-bold">{t.upgrade.title}</h2>
-                <p className="text-sm text-slate-400">{t.upgrade.description}</p>
-                <div className="text-4xl font-bold">{t.upgrade.price}</div>
-                <button
-                  onClick={handleUpgrade}
-                  className="w-full py-3 bg-blue-500 hover:bg-blue-400 text-black font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  {t.upgrade.subscribe} <ArrowRight className="w-4 h-4" />
-                </button>
-                <button onClick={() => setShowPricing(false)} className="text-sm text-slate-400 hover:text-white">
-                  {t.upgrade.maybeLater}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </main>
   );
