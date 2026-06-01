@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe, Sparkles, Mail, LogOut, Swords } from 'lucide-react';
+import { Search, Loader2, TrendingUp, ArrowRight, Zap, Check, Shield, BarChart3, Globe, Sparkles, Mail, LogOut, Swords, Scan } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 // ==================== ПЕРЕВОДЫ ====================
@@ -14,7 +14,8 @@ const translations = {
     upgrade: { button: 'Upgrade to PRO', title: 'Unlock Unlimited Tracking', description: 'Get unlimited keyword checks, daily monitoring, and history.', price: '$19/month', subscribe: 'Subscribe with Stripe', maybeLater: 'Maybe later' },
     login: { placeholder: 'you@example.com', button: 'Sign In', sending: 'Sending...', checkEmail: 'Check your email! We sent a magic link.' },
     geoScanLink: 'Need a full AI visibility audit?', tryGeoScan: 'Try GeoScan', blogLink: 'Read our Blog',
-    compare: { button: 'Compare', title: 'Compare with Competitors', description: 'Enter up to 3 competitor URLs to see how they rank for the same keywords.', yourSite: 'Your Site', compareButton: 'Run Comparison', close: 'Close', module: 'Keyword', noData: 'No data' }
+    compare: { button: 'Compare', title: 'Compare with Competitors', description: 'Enter up to 3 competitor URLs to see how they rank for the same keywords.', yourSite: 'Your Site', compareButton: 'Run Comparison', close: 'Close', module: 'Keyword', noData: 'No data' },
+    audit: { button: 'Audit in GeoScan', tooltip: 'Scan this site for AI crawler blocking, llms.txt, OG/Schema and more' }
   },
   ru: {
     hero: { title: 'Отслеживайте свою AI-видимость', subtitle: 'GeoRank Tracker', description: 'Мониторинг появления вашего сайта в результатах AI-поиска по ключевым словам.', freeScans: '3 бесплатных проверки/день', aiPowered: 'На основе AI', history: 'История проверок' },
@@ -24,7 +25,8 @@ const translations = {
     upgrade: { button: 'Обновитесь до PRO', title: 'Безлимитный трекинг', description: 'Неограниченные проверки, ежедневный мониторинг и история.', price: '$19/мес', subscribe: 'Подписаться через Stripe', maybeLater: 'Может, позже' },
     login: { placeholder: 'you@example.com', button: 'Войти', sending: 'Отправка...', checkEmail: 'Проверьте почту! Мы отправили волшебную ссылку.' },
     geoScanLink: 'Нужен полный аудит AI-видимости?', tryGeoScan: 'Попробуйте GeoScan', blogLink: 'Читать блог',
-    compare: { button: 'Сравнить', title: 'Сравнение с конкурентами', description: 'Введите до 3 URL конкурентов, чтобы сравнить их позиции по тем же ключевым словам.', yourSite: 'Ваш сайт', compareButton: 'Запустить сравнение', close: 'Закрыть', module: 'Ключ', noData: 'Нет данных' }
+    compare: { button: 'Сравнить', title: 'Сравнение с конкурентами', description: 'Введите до 3 URL конкурентов, чтобы сравнить их позиции по тем же ключевым словам.', yourSite: 'Ваш сайт', compareButton: 'Запустить сравнение', close: 'Закрыть', module: 'Ключ', noData: 'Нет данных' },
+    audit: { button: 'Аудит в GeoScan', tooltip: 'Проверить сайт на блокировку AI-краулеров, llms.txt, OG/Schema и другое' }
   }
 };
 
@@ -144,6 +146,11 @@ export default function Home() {
     } catch (err) { alert('Comparison failed: ' + err.message); } finally { setCompareLoading(false); }
   };
 
+  const handleAudit = () => {
+    if (!url) return;
+    window.open(`https://geoscan-a.vercel.app/?url=${encodeURIComponent(url)}`, '_blank');
+  };
+
   if (!ready) return null;
 
   return (
@@ -154,6 +161,7 @@ export default function Home() {
           <div className="flex items-center gap-2"><Globe className="w-5 h-5 text-blue-400" /><span className="text-sm font-medium">GeoRank</span></div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher locale={locale} setLocale={setLocale} />
+            <button onClick={handleAudit} disabled={!url} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl transition-colors duration-200 flex items-center gap-1 disabled:opacity-50" title={t.audit.tooltip}><Scan className="w-4 h-4" /> {t.audit.button}</button>
             <button onClick={() => setCompareOpen(true)} disabled={!results} className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-xl transition-colors duration-200 flex items-center gap-1"><Swords className="w-4 h-4" /> {t.compare.button}</button>
             {!session ? (
               <div className="flex items-center gap-2">
